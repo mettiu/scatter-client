@@ -65,7 +65,7 @@ vorpal
 
         // get root folder information for this user from server
         const root = await getRoot(socket);
-        status.rootFolderId = root._id;
+        status.rootFolderId = root._id; // eslint-disable-line no-underscore-dangle
         status.rootFolderName = root.name;
 
         // show vorpal prompt
