@@ -130,20 +130,3 @@ vorpal
     this.log(await getRoot(socket));
     cb();
   });
-
-
-// socket.on('disconnect', () => {});
-
-// test('Socket.io Test', () => {
-//   // socket.on('news', function (data) {
-//   //   console.log(data);
-//   //   socket.emit('my other event', { my: 'data' });
-//   // });
-//
-//   // socket.on('connect', function(){});
-//   // socket.on('event', function(data){});
-//   // socket.on('disconnect', function(){});
-//
-//   console.log('fatto');
-//   // client.emit('message', testMessage);
-// });
