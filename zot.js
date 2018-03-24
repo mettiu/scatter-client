@@ -10,13 +10,12 @@ const { uploadFile } = require('./utils/fileUpload');
 const status = {
   firstConnectionDone: false,
   connected: false,
-  currentFolderId: null,
-  currentFolderName: null,
-  rootFolderId: null,
-  rootFolderName: null,
-  sessionToken: null,
-  userId: '5a3507457db4e6110651379b',
   userData: null,
+  // currentFolder: null,
+  // currentFolderId: null,
+  // currentFolderName: null,
+  // rootFolderId: null,
+  // rootFolderName: null,
 };
 
 const vorpal = new Vorpal();
@@ -28,32 +27,33 @@ vorpal
 let socket;
 vorpal
   .command('login', 'Login into server. This should be the first action to perform!')
-  .action(async function (args, cb) {
-    const v = this;
+  .action(async (args, cb) => {
     vorpal.log('login in progress...');
-    vorpal.hide();
+
+    // manage login process using http calls
     let response;
     try {
       response = await login(httpConfig.login.uri, 'mettiu', 'mettiu');
-      vorpal.log(response);
+      // TODO: prompt user for username and password information
+      vorpal.log('You are now logged in.');
     } catch (e) {
       vorpal.log(`Something went wrong with login attempt. Server said '${e.statusCode}'`);
       vorpal.log(e);
-      vorpal.show();
       cb();
     }
 
     if (response.error) {
-      v.log(`Error occurred: ${response.error}`);
+      vorpal.log(`Error occurred: ${response.error}`);
       cb();
     }
 
+    // set user data from received response into status variable
     status.userData = response;
-    status.sessionToken = status.userData.jwt;
-    status.userId = status.userData._id; // eslint-disable-line no-underscore-dangle
-    // this.log(status);
-    socket = io(socketConfig.uri, { query: { token: status.sessionToken } });
 
+    // setup socket.io connection, passing jwt token into querystring parameter 'token'
+    socket = io(socketConfig.uri, { query: { token: status.userData.jwt } });
+
+    // Define connect and other socket.io connection related events management routines
     socket.on('connect', async () => {
       // check if this is the first connection. Otherwise, let it managege by
       // 'reconnect' event later on.
@@ -61,7 +61,7 @@ vorpal
         // set status stuff
         status.firstConnectionDone = true;
         status.connected = true;
-        v.log(`Connected to ${socketConfig.uri}`);
+        vorpal.log(`Connected to ${socketConfig.uri}`);
 
         // get root folder information for this user from server
         const root = await getRoot(socket);
@@ -74,10 +74,9 @@ vorpal
     });
 
     socket.on('disconnect', () => {
-      // hide vorpal prompt and primt console information about 'disconnect' event
+      // hide vorpal prompt and print console information about 'disconnect' event
       vorpal.ui.cancel();
       vorpal.log(`Connection to ${socketConfig.uri} lost. Trying to reconnect...`);
-      // TODO: set connected flag in status <<--------------------------------- !!!
 
       // set status stuff
       status.connected = false;
@@ -103,7 +102,6 @@ vorpal
 
     socket.on('wellcome', (data) => {
       vorpal.log(`Server says: ${data}`);
-      // vorpal.show();
     });
 
     cb();
