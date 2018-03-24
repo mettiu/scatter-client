@@ -55,27 +55,42 @@ vorpal
     socket = io(socketConfig.uri, { query: { token: status.sessionToken } });
 
     socket.on('connect', async () => {
+      // check if this is the first connection. Otherwise, let it managege by
+      // 'reconnect' event later on.
       if (!status.firstConnectionDone) {
+        // set status stuff
         status.firstConnectionDone = true;
         status.connected = true;
         v.log(`Connected to ${socketConfig.uri}`);
+
+        // get root folder information for this user from server
         const root = await getRoot(socket);
         status.rootFolderId = root._id;
         status.rootFolderName = root.name;
+
+        // show vorpal prompt
         vorpal.show();
       }
     });
 
     socket.on('disconnect', () => {
+      // hide vorpal prompt and primt console information about 'disconnect' event
       vorpal.ui.cancel();
       vorpal.log(`Connection to ${socketConfig.uri} lost. Trying to reconnect...`);
-      // vorpal.hide();
       // TODO: set connected flag in status <<--------------------------------- !!!
+
+      // set status stuff
+      status.connected = false;
     });
 
     socket.on('reconnect', () => {
+      // Do this only if this is not the first connection attempt. otherwise,
+      // let it manage by 'connect' event
       if (status.firstConnectionDone) {
+        // set status stuff
         status.connected = true;
+
+        // print console information and show vorpal prompt
         vorpal.log(`Connection to ${socketConfig.uri} re-established.`);
         vorpal.show();
       }
