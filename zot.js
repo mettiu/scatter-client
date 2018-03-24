@@ -8,14 +8,15 @@ const { ls } = require('./utils/ls');
 const { uploadFile } = require('./utils/fileUpload');
 
 const status = {
+  // variables for managing connect/reconnect socket events
   firstConnectionDone: false,
   connected: false,
+
+  // info from user model is saved into this variable at login
   userData: null,
-  // currentFolder: null,
-  // currentFolderId: null,
-  // currentFolderName: null,
-  // rootFolderId: null,
-  // rootFolderName: null,
+
+  // info from folder model is saved into this variable at login
+  rootFolder: null,
 };
 
 const vorpal = new Vorpal();
@@ -64,9 +65,7 @@ vorpal
         vorpal.log(`Connected to ${socketConfig.uri}`);
 
         // get root folder information for this user from server
-        const root = await getRoot(socket);
-        status.rootFolderId = root._id; // eslint-disable-line no-underscore-dangle
-        status.rootFolderName = root.name;
+        status.rootFolder = await getRoot(socket);
 
         // show vorpal prompt
         vorpal.show();
