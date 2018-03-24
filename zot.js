@@ -1,13 +1,11 @@
 const Vorpal = require('vorpal');
 const io = require('socket.io-client');
 
-const { uploadFile } = require('./utils/fileUpload');
-const { ls } = require('./utils/ls');
 const { getRoot } = require('./utils/getRoot');
+const { httpConfig, socketConfig } = require('./config');
 const { login } = require('./utils/login');
-
-const remote = 'http://localhost:3000';
-const loginPath = '/api/authentication/login';
+const { ls } = require('./utils/ls');
+const { uploadFile } = require('./utils/fileUpload');
 
 const status = {
   firstConnectionDone: false,
@@ -24,11 +22,10 @@ const status = {
 const vorpal = new Vorpal();
 
 vorpal
-  .delimiter(`${remote}:~$ `)
+  .delimiter(`${socketConfig.uri}:~$ `)
   .show();
 
 let socket;
-
 vorpal
   .command('login', 'Login into server. This should be the first action to perform!')
   .action(async function (args, cb) {
@@ -37,7 +34,7 @@ vorpal
     vorpal.hide();
     let response;
     try {
-      response = await login(remote + loginPath, 'mettiu', 'mettiu');
+      response = await login(httpConfig.login.uri, 'mettiu', 'mettiu');
       vorpal.log(response);
     } catch (e) {
       vorpal.log(`Something went wrong with login attempt. Server said '${e.statusCode}'`);
@@ -55,13 +52,13 @@ vorpal
     status.sessionToken = status.userData.jwt;
     status.userId = status.userData._id; // eslint-disable-line no-underscore-dangle
     // this.log(status);
-    socket = io(remote, { query: { token: status.sessionToken } });
+    socket = io(socketConfig.uri, { query: { token: status.sessionToken } });
 
     socket.on('connect', async () => {
       if (!status.firstConnectionDone) {
         status.firstConnectionDone = true;
         status.connected = true;
-        v.log(`Connected to ${remote}`);
+        v.log(`Connected to ${socketConfig.uri}`);
         const root = await getRoot(socket);
         status.rootFolderId = root._id;
         status.rootFolderName = root.name;
@@ -71,7 +68,7 @@ vorpal
 
     socket.on('disconnect', () => {
       vorpal.ui.cancel();
-      vorpal.log(`Connection to ${remote} lost. Trying to reconnect...`);
+      vorpal.log(`Connection to ${socketConfig.uri} lost. Trying to reconnect...`);
       // vorpal.hide();
       // TODO: set connected flag in status <<--------------------------------- !!!
     });
@@ -79,7 +76,7 @@ vorpal
     socket.on('reconnect', () => {
       if (status.firstConnectionDone) {
         status.connected = true;
-        vorpal.log(`Connection to ${remote} re-established.`);
+        vorpal.log(`Connection to ${socketConfig.uri} re-established.`);
         vorpal.show();
       }
     });
