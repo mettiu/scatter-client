@@ -11,8 +11,8 @@ async function login(uri, username, password) {
     json: true,
   };
 
-  const user = await rp(options);
-  return user;
+  const token = await rp(options);
+  return token;
 }
 
 exports.login = login;
