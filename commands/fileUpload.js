@@ -3,6 +3,7 @@ const config = require('../config.js');
 const encode = require('../utils/encode');
 const fs = require('fs');
 const path = require('path');
+const { sendMessage } = require('../utils/send-message');
 
 function getChunkSplitInfo(fileSize) {
   const chunkSize = config.http.chunkUpload.size;
@@ -12,14 +13,6 @@ function getChunkSplitInfo(fileSize) {
     chunkNumber: Math.floor(fileSize / chunkSize),
     lastChunkSize: fileSize % chunkSize,
   };
-}
-
-// TODO: bring sendmessage function into its own module (used also in other modules!!
-function sendMessage(socket, eventname, data) {
-  return new Promise((resolve) => {
-    socket.on('connect_timeout', () => console.log('error!'));
-    socket.emit(eventname, data, ack => resolve(ack));
-  });
 }
 
 async function uploadChunk(socket, buffer, seq, token) {
