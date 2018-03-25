@@ -5,7 +5,7 @@ const { getRoot } = require('./commands/getRoot');
 const { httpConfig, socketConfig } = require('./config');
 const { login } = require('./commands/login');
 const { ls } = require('./commands/ls');
-const { uploadFile } = require('./commands/fileUpload');
+const { uploadFile, stringifyUploadResult } = require('./commands/fileUpload');
 
 const status = {
   // variables for managing connect/reconnect socket events
@@ -129,7 +129,19 @@ vorpal
   .command('upload <file> <destinationPath>', 'Uploads <file> with specified <destinationPath>')
   .action(async function (args, cb) {
     this.log(`file: ${args.file}`);
-    await uploadFile(socket, args.file, args.destinationPath);
+    let result;
+    try {
+      result = await uploadFile(socket, args.file, args.destinationPath);
+    } catch (e) {
+      // if file is not found
+      if (e.code === 'ENOENT') {
+        vorpal.log(`File ${args.file} not found.`);
+      } else {
+        // throw any other error
+        throw e;
+      }
+    }
+    vorpal.log(stringifyUploadResult(result));
     cb();
   });
 
