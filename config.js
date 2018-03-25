@@ -18,4 +18,17 @@ exports.socketConfig = {
 exports.chunkUpload = {
   // size of the data chunk, in bytes
   size: 4096,
+  message: 'chunk-upload',
+};
+
+exports.fileUpload = {
+  message: 'file-upload',
+};
+
+exports.fileList = {
+  message: 'file-list',
+};
+
+exports.remoteRoot = {
+  message: 'get-root',
 };
