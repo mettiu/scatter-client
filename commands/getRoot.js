@@ -1,11 +1,4 @@
-
-function sendMessage(socket, eventname, data) {
-  return new Promise((resolve) => {
-    socket.on('connect_timeout', () => console.log('error!'));
-    socket.emit(eventname, data, ack => resolve(ack));
-  });
-}
-
+const { sendMessage } = require('../utils/send-message');
 
 // TODO: user remote path (now it's not used!!)
 async function getRoot(socket) {
