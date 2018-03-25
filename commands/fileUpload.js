@@ -1,5 +1,5 @@
 const cipher = require('../utils/cipher');
-const { chunkUpload } = require('../config');
+const { chunkUpload, fileUpload } = require('../config');
 const encode = require('../utils/encode');
 const fs = require('fs');
 const path = require('path');
@@ -20,7 +20,7 @@ async function uploadChunk(socket, buffer, seq, token) {
     buffer: encode.base64Encode(cipher.crypt(buffer)),
     chunkSize: buffer.length,
   };
-  return sendMessage(socket, 'chunk-upload', data);
+  return sendMessage(socket, chunkUpload.message, data);
 }
 
 async function announceFile(socket, filePath, remotePath = '/') {
@@ -32,7 +32,7 @@ async function announceFile(socket, filePath, remotePath = '/') {
     remotePath,
   };
 
-  return JSON.parse(await sendMessage(socket, 'file-upload', data));
+  return JSON.parse(await sendMessage(socket, fileUpload.message, data));
 }
 
 async function uploadFile(socket, filePath, remotePath) {
