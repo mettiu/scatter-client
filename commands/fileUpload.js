@@ -1,19 +1,16 @@
 const cipher = require('../utils/cipher');
-const config = require('../config.js');
+const { chunkUpload } = require('../config');
 const encode = require('../utils/encode');
 const fs = require('fs');
 const path = require('path');
 const { sendMessage } = require('../utils/send-message');
 
-function getChunkSplitInfo(fileSize) {
-  const chunkSize = config.http.chunkUpload.size;
-  return {
-    fileSize,
-    chunkSize,
-    chunkNumber: Math.floor(fileSize / chunkSize),
-    lastChunkSize: fileSize % chunkSize,
-  };
-}
+const getChunkSplitInfo = fileSize => ({
+  fileSize,
+  chunkSize: chunkUpload.size,
+  chunkNumber: Math.floor(fileSize / chunkUpload.size),
+  lastChunkSize: fileSize % chunkUpload.size,
+});
 
 async function uploadChunk(socket, buffer, seq, token) {
   // crypt and then encode data chunk
