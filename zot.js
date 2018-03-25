@@ -1,11 +1,11 @@
 const Vorpal = require('vorpal');
 const io = require('socket.io-client');
 
-const { getRoot } = require('./utils/getRoot');
+const { getRoot } = require('./commands/getRoot');
 const { httpConfig, socketConfig } = require('./config');
-const { login } = require('./utils/login');
-const { ls } = require('./utils/ls');
-const { uploadFile } = require('./utils/fileUpload');
+const { login } = require('./commands/login');
+const { ls } = require('./commands/ls');
+const { uploadFile } = require('./commands/fileUpload');
 
 const status = {
   // variables for managing connect/reconnect socket events

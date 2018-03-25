@@ -1,6 +1,6 @@
-const cipher = require('./cipher');
+const cipher = require('../utils/cipher');
 const config = require('../config.js');
-const encode = require('./encode');
+const encode = require('../utils/encode');
 const fs = require('fs');
 const path = require('path');
 
@@ -31,25 +31,6 @@ async function uploadChunk(socket, buffer, seq, token) {
     chunkSize: buffer.length,
   };
   return sendMessage(socket, 'chunk-upload', data);
-
-
-  // const opts = {
-  //   method: 'POST',
-  //   body: {
-  //     fileId,
-  //     data,
-  //     // size,
-  //   },
-  //   json: true,
-  // };
-
-  // let response;
-  // try {
-  //   response = await got(config.http.chunkUpload.uri, opts);
-  // } catch (catched) {
-  //   throw createError('Cannot upload chunk.', errors.ERR_HTTP_UPLOAD);
-  // }
-  // return response.body;
 }
 
 // TODO: user remote path (now it's not used!!)
