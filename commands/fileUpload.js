@@ -35,21 +35,20 @@ async function announceFile(socket, filePath, remotePath = '/') {
   return JSON.parse(await sendMessage(socket, fileUpload.message, data));
 }
 
-async function uploadFile(socket, filePath, remotePath) {
+async function uploadFile(socket, filePath) {
   // const filename = path.parse(filePath).base;
   const fileStats = fs.statSync(filePath);
   const chunkInfo = getChunkSplitInfo(fileStats.size);
 
   // TODO: manage file announcement returned data (i.e.: no token...)
   const fileAnnouncement =
-      await announceFile(socket, filePath, remotePath, fileStats.size);
+      await announceFile(socket, filePath, fileStats.size);
 
   const result = {
     saved: false,
     versioned: false,
     chunkInfo: null,
     filePath,
-    remotePath,
   };
 
   // if file was not saved (the file already exists and there is NO CHANGE), return
@@ -104,10 +103,10 @@ function stringifyUploadResult(result) {
   }
   // if file was saved and was not versioned
   if (!result.versioned) {
-    return `File ${result.filePath} was split in ${result.chunkInfo.chunkNumber + 1} chunks and saved in remote path '${result.remotePath}'.`;
+    return `File ${result.filePath} was split in ${result.chunkInfo.chunkNumber + 1} chunks and uploaded.`;
   }
   // if file was saved as a new version
-  return `New version of file ${result.filePath} was split in ${result.chunkInfo.chunkNumber + 1} chunks and saved in remote path '${result.remotePath}'.`;
+  return `New version of file ${result.filePath} was split in ${result.chunkInfo.chunkNumber + 1} chunks and uploaded'.`;
 }
 
 exports.uploadFile = uploadFile;
