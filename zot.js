@@ -7,6 +7,7 @@ const { httpConfig, socketConfig } = require('./config');
 const { login } = require('./commands/login');
 const { ls } = require('./commands/ls');
 const { mkdir } = require('./commands/mkdir');
+const { pwd } = require('./commands/pwd');
 const { uploadFile, stringifyUploadResult } = require('./commands/fileUpload');
 
 const status = {
@@ -19,6 +20,10 @@ const status = {
 
   // info from folder model is saved into this variable at login
   rootFolder: null,
+
+  // info from folder model is saved into this variable at login
+  currentFolder: null,
+
 };
 
 const vorpal = new Vorpal();
@@ -68,6 +73,7 @@ vorpal
 
         // get root folder information for this user from server
         status.rootFolder = await getRoot(socket);
+        status.currentFolder = status.rootFolder;
 
         // show vorpal prompt
         vorpal.show();
@@ -150,14 +156,19 @@ vorpal
 vorpal
   .command('getroot', 'Gets remote file system root.')
   .action(async function (args, cb) {
-    this.log(await getRoot(socket));
+    const root = await getRoot(socket);
+    this.log(root);
+    status.rootFolder = root;
+    status.currentFolder = root;
     cb();
   });
 
 vorpal
   .command('cd <destination>', 'Change current folder and step into <destination> folder.')
   .action(async function (args, cb) {
-    this.log(await cd(socket, args.destination));
+    const destinationFolder = await cd(socket, args.destination);
+    this.log(destinationFolder);
+    if (!destinationFolder.error) status.currentFolder = destinationFolder;
     cb();
   });
 
@@ -165,5 +176,17 @@ vorpal
   .command('mkdir <name>', 'Create folder <name into current folder.')
   .action(async function (args, cb) {
     this.log(await mkdir(socket, args.name));
+    cb();
+  });
+
+vorpal
+  .command('pwd', 'Check your current folder.')
+  .action(async function (args, cb) {
+    const pwdResult = await pwd(socket);
+    this.log(pwdResult);
+    status.currentFolder = pwdResult.folder;
+    if (pwdResult.error) {
+      status.rootFolder = pwdResult.folder;
+    }
     cb();
   });
