@@ -41,3 +41,6 @@ exports.cdCommand = {
   message: 'cd',
 };
 
+exports.pwdCommand = {
+  message: 'pwd',
+};
