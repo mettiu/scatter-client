@@ -1,6 +1,7 @@
 const Vorpal = require('vorpal');
 const io = require('socket.io-client');
 
+const { cd } = require('./commands/cd');
 const { getRoot } = require('./commands/getRoot');
 const { httpConfig, socketConfig } = require('./config');
 const { login } = require('./commands/login');
@@ -156,7 +157,7 @@ vorpal
 vorpal
   .command('cd <destination>', 'Change current folder and step into <destination> folder.')
   .action(async function (args, cb) {
-    this.log(await mkdir(socket, args.destination));
+    this.log(await cd(socket, args.destination));
     cb();
   });
 

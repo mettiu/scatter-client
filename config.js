@@ -36,3 +36,8 @@ exports.remoteRoot = {
 exports.makeDir = {
   message: 'mkdir',
 };
+
+exports.cdCommand = {
+  message: 'cd',
+};
+
