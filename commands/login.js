@@ -5,6 +5,7 @@ async function login(uri, username, password) {
     method: 'POST',
     uri,
     body: {
+      // email: 'mettiu@gmail.com',
       username,
       password,
     },

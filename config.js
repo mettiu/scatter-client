@@ -32,3 +32,7 @@ exports.fileList = {
 exports.remoteRoot = {
   message: 'get-root',
 };
+
+exports.makeDir = {
+  message: 'mkdir',
+};

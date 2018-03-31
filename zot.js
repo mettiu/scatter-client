@@ -5,6 +5,7 @@ const { getRoot } = require('./commands/getRoot');
 const { httpConfig, socketConfig } = require('./config');
 const { login } = require('./commands/login');
 const { ls } = require('./commands/ls');
+const { mkdir } = require('./commands/mkdir');
 const { uploadFile, stringifyUploadResult } = require('./commands/fileUpload');
 
 const status = {
@@ -149,5 +150,19 @@ vorpal
   .command('getroot', 'Gets remote file system root.')
   .action(async function (args, cb) {
     this.log(await getRoot(socket));
+    cb();
+  });
+
+vorpal
+  .command('cd <destination>', 'Change current folder and step into <destination> folder.')
+  .action(async function (args, cb) {
+    this.log(await mkdir(socket, args.destination));
+    cb();
+  });
+
+vorpal
+  .command('mkdir <name>', 'Create folder <name into current folder.')
+  .action(async function (args, cb) {
+    this.log(await mkdir(socket, args.name));
     cb();
   });
