@@ -134,20 +134,26 @@ vorpal
   });
 
 vorpal
-  .command('upload <file> <destinationPath>', 'Uploads <file> with specified <destinationPath>')
+  .command('upload <file> [destinationPath]', 'Uploads <file> with optional [destinationPath]')
   .action(async function (args, cb) {
+    if (args.destinationPath) {
+      this.log('Sorry, but specifying optional parameter \'destinationPath\' is not implemented yet.');
+      cb();
+      return;
+    }
     this.log(`file: ${args.file}`);
     let result;
     try {
-      result = await uploadFile(socket, args.file, args.destinationPath);
+      result = await uploadFile(socket, args.file);
     } catch (e) {
       // if file is not found
       if (e.code === 'ENOENT') {
         vorpal.log(`File ${args.file} not found.`);
-      } else {
-        // throw any other error
-        throw e;
+        cb();
+        return;
       }
+      // throw any other error
+      throw e;
     }
     vorpal.log(stringifyUploadResult(result));
     cb();
