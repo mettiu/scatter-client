@@ -44,3 +44,7 @@ exports.cdCommand = {
 exports.pwdCommand = {
   message: 'pwd',
 };
+
+exports.rmCommand = {
+  message: 'rm',
+};
