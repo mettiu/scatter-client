@@ -9,6 +9,7 @@ const { ls } = require('./commands/ls');
 const { mkdir } = require('./commands/mkdir');
 const { pwd } = require('./commands/pwd');
 const { rm } = require('./commands/rm');
+const { rmdir } = require('./commands/rmdir');
 const { uploadFile, stringifyUploadResult } = require('./commands/fileUpload');
 
 const status = {
@@ -202,5 +203,12 @@ vorpal
   .command('rm <name>', 'Remove file <name> in current folder.')
   .action(async function (args, cb) {
     this.log(await rm(socket, args.name));
+    cb();
+  });
+
+vorpal
+  .command('rmdir <name>', 'Remove folder <name> in current folder.')
+  .action(async function (args, cb) {
+    this.log(await rmdir(socket, args.name));
     cb();
   });
