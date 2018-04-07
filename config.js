@@ -48,3 +48,7 @@ exports.pwdCommand = {
 exports.rmCommand = {
   message: 'rm',
 };
+
+exports.rmdirCommand = {
+  message: 'rmdir',
+};
