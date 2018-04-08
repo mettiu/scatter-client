@@ -23,13 +23,12 @@ async function uploadChunk(socket, buffer, seq, token) {
   return sendMessage(socket, chunkUpload.message, data);
 }
 
-async function announceFile(socket, filePath, remotePath = '/') {
+async function announceFile(socket, filePath) {
   const fileStats = fs.statSync(filePath);
   const data = {
     fileName: path.parse(filePath).base,
     size: fileStats.size,
     lastModified: Math.round(fileStats.mtimeMs),
-    remotePath,
   };
 
   return JSON.parse(await sendMessage(socket, fileUpload.message, data));

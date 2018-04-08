@@ -136,13 +136,8 @@ vorpal
   });
 
 vorpal
-  .command('upload <file> [destinationPath]', 'Uploads <file> with optional [destinationPath]')
+  .command('upload <file>', 'Uploads <file> in current folder')
   .action(async function (args, cb) {
-    if (args.destinationPath) {
-      this.log('Sorry, but specifying optional parameter \'destinationPath\' is not implemented yet.');
-      cb();
-      return;
-    }
     this.log(`file: ${args.file}`);
     let result;
     try {
