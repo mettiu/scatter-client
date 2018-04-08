@@ -1,4 +1,5 @@
 const Vorpal = require('vorpal');
+const fs = require('fs');
 const io = require('socket.io-client');
 
 const { cd } = require('./commands/cd');
@@ -139,17 +140,23 @@ vorpal
   .command('upload <file>', 'Uploads <file> in current folder')
   .action(async function (args, cb) {
     this.log(`file: ${args.file}`);
+
+    // check if file exists and is a regular file
+    if (!fs.existsSync(args.file)) {
+      vorpal.log(`File ${args.file} not found.`);
+      cb();
+      return;
+    }
+    if (!fs.statSync(args.file).isFile()) {
+      vorpal.log(`'${args.file}' is not a regular file, but file was expected.`);
+      cb();
+      return;
+    }
+
     let result;
     try {
       result = await uploadFile(socket, args.file);
     } catch (e) {
-      // if file is not found
-      if (e.code === 'ENOENT') {
-        vorpal.log(`File ${args.file} not found.`);
-        cb();
-        return;
-      }
-      // throw any other error
       throw e;
     }
     vorpal.log(stringifyUploadResult(result));
