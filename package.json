@@ -1,6 +1,6 @@
 {
   "name": "zot",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Storage CLI",
   "main": "zot.js",
   "author": "Mettiu",
