@@ -1,6 +1,7 @@
 const rp = require('request-promise-native');
+const Commander = require('../utils/commander');
 
-async function login(uri, username, password) {
+async function action(uri, username, password) {
   const options = {
     method: 'POST',
     uri,
@@ -16,4 +17,11 @@ async function login(uri, username, password) {
   return token;
 }
 
-exports.login = login;
+const command = {
+  name: 'login',
+  action,
+};
+
+Commander.createCommand(command);
+
+module.exports = command;

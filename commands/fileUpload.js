@@ -1,9 +1,8 @@
-const cipher = require('../utils/cipher');
-const { chunkUpload, fileUpload } = require('../config');
-const encode = require('../utils/encode');
+const { chunkUpload } = require('../config');
 const fs = require('fs');
-const path = require('path');
-const { sendMessage } = require('../utils/send-message');
+const Commander = require('../utils/commander');
+const announceFileCommand = require('./announceFile');
+const uploadChunkCommand = require('./uploadChunk');
 
 const getChunkSplitInfo = fileSize => ({
   fileSize,
@@ -12,36 +11,13 @@ const getChunkSplitInfo = fileSize => ({
   lastChunkSize: fileSize % chunkUpload.size,
 });
 
-async function uploadChunk(socket, buffer, seq, token) {
-  // crypt and then encode data chunk
-  const data = {
-    seq,
-    token,
-    buffer: encode.base64Encode(cipher.crypt(buffer)),
-    chunkSize: buffer.length,
-  };
-  return sendMessage(socket, chunkUpload.message, data);
-}
-
-async function announceFile(socket, filePath) {
-  const fileStats = fs.statSync(filePath);
-  const data = {
-    fileName: path.parse(filePath).base,
-    size: fileStats.size,
-    lastModified: Math.round(fileStats.mtimeMs),
-  };
-
-  return JSON.parse(await sendMessage(socket, fileUpload.message, data));
-}
-
-async function uploadFile(socket, filePath) {
-  // const filename = path.parse(filePath).base;
+async function action(socket, filePath) {
   const fileStats = fs.statSync(filePath);
   const chunkInfo = getChunkSplitInfo(fileStats.size);
 
   // TODO: manage file announcement returned data (i.e.: no token...)
   const fileAnnouncement =
-      await announceFile(socket, filePath, fileStats.size);
+      await Commander.exec(announceFileCommand.name, socket, filePath, fileStats.size);
 
   const result = {
     saved: false,
@@ -69,14 +45,15 @@ async function uploadFile(socket, filePath) {
 
   for (i = 0; i < chunkInfo.chunkNumber; i += 1) {
     fs.readSync(fd, buffer, 0, chunkInfo.chunkSize, null);
-    results.push(uploadChunk(socket, buffer, i, fileAnnouncement.token));
+    results
+      .push(Commander.exec(uploadChunkCommand.name, socket, buffer, i, fileAnnouncement.token));
   }
   if (chunkInfo.lastChunkSize !== 0) {
     // read the last (and smaller) chunk and upload it
     const lastBuffer = Buffer.alloc(chunkInfo.lastChunkSize);
     fs.readSync(fd, lastBuffer, 0, chunkInfo.lastChunkSize, null);
-    results.push(uploadChunk(
-      socket, lastBuffer,
+    results.push(Commander.exec(
+      uploadChunkCommand.name, socket, lastBuffer,
       chunkInfo.chunkNumber - 1, fileAnnouncement.token,
     ));
   }
@@ -95,7 +72,7 @@ async function uploadFile(socket, filePath) {
   });
 }
 
-function stringifyUploadResult(result) {
+function humanize(result) {
   // if file was not saved
   if (!result.saved) {
     return `File ${result.filePath} was not changed since last upload.`;
@@ -108,8 +85,12 @@ function stringifyUploadResult(result) {
   return `New version of file ${result.filePath} was split in ${result.chunkInfo.chunkNumber + 1} chunks and uploaded'.`;
 }
 
-exports.uploadFile = uploadFile;
-exports.announceFile = announceFile;
-exports.getChunkSplitInfo = getChunkSplitInfo;
-exports.stringifyUploadResult = stringifyUploadResult;
+const command = {
+  name: 'fileUpload',
+  action,
+  humanize,
+};
 
+Commander.createCommand(command);
+
+module.exports = command;

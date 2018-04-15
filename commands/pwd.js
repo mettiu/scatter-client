@@ -1,10 +1,18 @@
 const { pwdCommand } = require('../config');
 const { sendMessage } = require('../utils/send-message');
+const Commander = require('../utils/commander');
 
-async function pwd(socket) {
+async function action(socket) {
   const data = { };
   const ack = await sendMessage(socket, pwdCommand.message, data);
   return JSON.parse(ack);
 }
 
-exports.pwd = pwd;
+const command = {
+  name: 'pwd',
+  action,
+};
+
+Commander.createCommand(command);
+
+module.exports = command;

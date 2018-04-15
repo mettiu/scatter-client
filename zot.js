@@ -2,16 +2,18 @@ const Vorpal = require('vorpal');
 const fs = require('fs');
 const io = require('socket.io-client');
 
-const { cd } = require('./commands/cd');
-const { getRoot } = require('./commands/getRoot');
+const cdCommand = require('./commands/cd');
+const getRootCommand = require('./commands/getRoot');
 const { httpConfig, socketConfig } = require('./config');
-const { login } = require('./commands/login');
-const { ls } = require('./commands/ls');
-const { mkdir } = require('./commands/mkdir');
-const { pwd } = require('./commands/pwd');
-const { rm } = require('./commands/rm');
-const { rmdir } = require('./commands/rmdir');
-const { uploadFile, stringifyUploadResult } = require('./commands/fileUpload');
+const loginCommand = require('./commands/login');
+const lsCommand = require('./commands/ls');
+const mkdirCommand = require('./commands/mkdir');
+const pwdCommand = require('./commands/pwd');
+const rmCommand = require('./commands/rm');
+const rmdirCommand = require('./commands/rmdir');
+const uploadFileCommand = require('./commands/fileUpload');
+
+const Commander = require('./utils/commander');
 
 const status = {
   // variables for managing connect/reconnect socket events
@@ -44,7 +46,8 @@ vorpal
     // manage login process using http calls
     let response;
     try {
-      response = await login(httpConfig.login.uri, 'mettiu', 'mettiu');
+      response = await Commander.exec(loginCommand.name, httpConfig.login.uri, 'mettiu', 'mettiu');
+      // login(httpConfig.login.uri, 'mettiu', 'mettiu');
       // TODO: prompt user for username and password information
       vorpal.log('You are now logged in.');
     } catch (e) {
@@ -75,7 +78,7 @@ vorpal
         vorpal.log(`Connected to ${socketConfig.uri}`);
 
         // get root folder information for this user from server
-        status.rootFolder = await getRoot(socket);
+        status.rootFolder = await Commander.exec(getRootCommand.name, socket);
         status.currentFolder = status.rootFolder;
 
         // show vorpal prompt
@@ -132,7 +135,7 @@ vorpal
       return cb();
     }
     this.log('ls in progress');
-    this.log(await ls(socket));
+    this.log(await Commander.exec(lsCommand.name, socket));
     return cb();
   });
 
@@ -155,18 +158,18 @@ vorpal
 
     let result;
     try {
-      result = await uploadFile(socket, args.file);
+      result = await Commander.exec(uploadFileCommand.name, socket, args.file);
     } catch (e) {
       throw e;
     }
-    vorpal.log(stringifyUploadResult(result));
+    vorpal.log(uploadFileCommand.humanize(result));
     cb();
   });
 
 vorpal
   .command('getroot', 'Gets remote file system root.')
   .action(async function (args, cb) {
-    const root = await getRoot(socket);
+    const root = await Commander.exec(getRootCommand.name, socket);
     this.log(root);
     status.rootFolder = root;
     status.currentFolder = root;
@@ -176,7 +179,7 @@ vorpal
 vorpal
   .command('cd <destination>', 'Change current folder and step into <destination> folder.')
   .action(async function (args, cb) {
-    const destinationFolder = await cd(socket, args.destination);
+    const destinationFolder = await Commander.exec(cdCommand.name, socket, args.destination);
     this.log(destinationFolder);
     if (!destinationFolder.error) status.currentFolder = destinationFolder;
     cb();
@@ -185,14 +188,14 @@ vorpal
 vorpal
   .command('mkdir <name>', 'Create folder <name into current folder.')
   .action(async function (args, cb) {
-    this.log(await mkdir(socket, args.name));
+    this.log(await Commander.exec(mkdirCommand.name, socket, args.name));
     cb();
   });
 
 vorpal
   .command('pwd', 'Check your current folder.')
   .action(async function (args, cb) {
-    const pwdResult = await pwd(socket);
+    const pwdResult = await Commander.exec(pwdCommand.name, socket);
     this.log(pwdResult);
     status.currentFolder = pwdResult.folder;
     if (pwdResult.error) {
@@ -204,13 +207,13 @@ vorpal
 vorpal
   .command('rm <name>', 'Remove file <name> in current folder.')
   .action(async function (args, cb) {
-    this.log(await rm(socket, args.name));
+    this.log(await Commander.exec(rmCommand.name, socket, args.name));
     cb();
   });
 
 vorpal
   .command('rmdir <name>', 'Remove folder <name> in current folder.')
   .action(async function (args, cb) {
-    this.log(await rmdir(socket, args.name));
+    this.log(await Commander.exec(rmdirCommand.name, socket, args.name));
     cb();
   });
